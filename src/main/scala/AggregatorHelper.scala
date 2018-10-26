@@ -4,20 +4,7 @@ import org.apache.spark.sql.functions._
 
 object AggregatorHelper {
 
-  /**
-    * Load data from csv
-    * @param spark spark context of the run
-    * @param path the path of the csv file to be parsed
-    * @tparam B Type of the dataset
-    * @return the dataset
-    */
-  def loadData[B: Encoder](spark: SparkSession, path: String) : Dataset[B] = {
-    spark.read
-      .option("header", "true")
-      .schema(implicitly[Encoder[B]].schema)
-      .csv(path)
-      .as[B]
-  }
+
   /**
     * Given 2 datasets of CDR and Cell, return the total dataset
     * @param spark spark context of the run
@@ -88,6 +75,8 @@ object AggregatorHelper {
       .withColumn("top_callee_3", 'result.getItem("favoriteCallees").getItem(2))
       .drop('result)
 
+
+    //join after reduce to speed up
     val mostUsedCellDF = cellCrdsDF.join(cellDS, Seq("cell_id"), "left_outer")
       .withColumnRenamed("cell_id", "top_cell")
       .withColumnRenamed("longitude", "top_cell_longitude")
@@ -99,10 +88,58 @@ object AggregatorHelper {
 
 }
 
+/**
+  * Class respresents the cell info
+  * @param cell_Id
+  * @param longitude
+  * @param latitude
+  */
 case class Cell(cell_Id: String, longitude: Double, latitude: Double)
+
+/**
+  * Class represents statistics of calls
+  * @param caller_id
+  * @param callee_id
+  * @param cell_id
+  * @param duration
+  * @param `type`
+  * @param dropped
+  */
 case class Cdr(caller_id: String, callee_id: String, cell_id: String, duration: Double, `type`: String, dropped: Int )
+
+/**
+  * Class for intermediate stages of the Aggregator
+  * @param cellInfo
+  * @param callees
+  */
 case class BufferAccumulator(cellInfo: Map[String, Int], callees: Map[String, Int])
+
+
+/**
+  * Class respresents the final stage of the Aggregator function
+  * @param favouriteCell
+  * @param favouriteCellUseCount
+  * @param favoriteCallees
+  */
 case class OutputAccumulator(favouriteCell: String, favouriteCellUseCount: Int, favoriteCallees: List[String])
+
+/**
+  * Class represent the final aggregated dataset
+  * @param caller_id
+  * @param total_distinct_callees
+  * @param total_dropped
+  * @param total_duration
+  * @param total_international_duration
+  * @param avg_on_net_duration
+  * @param less_than_10min
+  * @param top_cell
+  * @param top_cell_count
+  * @param top_callee_1
+  * @param top_callee_2
+  * @param top_callee_3
+  * @param top_cell_longitude
+  * @param top_cell_latitude
+  */
 case class AggregatedCdr(caller_id: String, total_distinct_callees: String, total_dropped: BigInt, total_duration: Double,
                          total_international_duration: Double, avg_on_net_duration: Double, less_than_10min: BigInt,
                          top_cell: String, top_cell_count: BigInt,

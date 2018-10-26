@@ -48,11 +48,11 @@ object CDRAggregator extends SparkSessionSetup {
   }
 
   /**
-    * Print the resuilt to output file specified by user
+    * Print the result to output file specified by user
     * @param aggregatedDS the dataset to be print
-    * @param outPath the path of the output file
+    * @param outputPath the path of the output file
     */
-  def printResult(aggregatedDS: Dataset[AggregatedCdr], outPath: String): Unit = {
+  def printResult(aggregatedDS: Dataset[AggregatedCdr], outputPath: String): Unit = {
 
     def formatOptionalValue(x: Option[_]) : String = {
       x match {
@@ -61,7 +61,7 @@ object CDRAggregator extends SparkSessionSetup {
       }
     }
 
-    val pw = new PrintWriter(new File(outPath))
+    val pw = new PrintWriter(new File(outputPath))
 
     aggregatedDS.collect().foreach(cdr => {
       pw.println()

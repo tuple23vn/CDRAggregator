@@ -10,7 +10,7 @@ class CDRAggregatorSpec extends FunSuite with SparkSessionSetup with BeforeAndAf
     withSparkSession(spark => {
       import spark.implicits._
         val cdrPath = "src/main/resources/cdrs.csv"
-        val ds = AggregatorHelper.loadData[Cdr](spark, cdrPath)
+        val ds = CDRAggregator.loadData[Cdr](spark, cdrPath)
         ds.show
         assert(ds.count() == 9)
 
