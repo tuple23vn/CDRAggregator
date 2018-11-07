@@ -7,9 +7,9 @@ sbt package
 A jar file is created for you. To run the app, run the following command
 
 {YOUR_SPARK_HOME}/bin/spark-submit \
-  --class "SimpleApp" \
+  --class "CDRAggregator" \
   --master local[4] \
-target/scala-2.11/simpleapp_2.11-0.1.jar
+target/scala-2.11/cdraggregator_2.11-0.1.jar [cdrPath] [cellPath] [resultPath]
 
 
 where {YOUR_SPARK_HOME} is the path where spark is intalled in your machine
